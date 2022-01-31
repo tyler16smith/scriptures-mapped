@@ -37,6 +37,7 @@
         // anonymous function
         ready(function () {
             Scriptures.init(() => { console.log("Initialized Scriptures module."); });
+            window.addEventListener("hashchange", Scriptures.onHashChanged);
         });
     </script>
 </body>
