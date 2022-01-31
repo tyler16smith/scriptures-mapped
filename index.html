@@ -36,7 +36,7 @@
 
         // anonymous function
         ready(function () {
-            Scriptures.init(() => { console.log("Initialized Scriptures module."); });
+            Scriptures.init(() => { Scriptures.onHashChanged(); }); // navigate home as default
             window.addEventListener("hashchange", Scriptures.onHashChanged);
         });
     </script>
