@@ -25,6 +25,7 @@ const Scriptures = (function () {
     const BOTTOM_PADDING = "<br /><br />";
     const CLASS_BOOKS = "books";
     const CLASS_BUTTON = "btn";
+    const CLASS_CHAPTER = "chapter";
     const CLASS_VOLUME = "volume";
     const DIV_SCRIPTURES_NAVIGATOR = "scripnav";
     const DIV_SCRIPTURES = "scriptures";
@@ -34,6 +35,7 @@ const Scriptures = (function () {
     const TAG_HEADER5 = "h5";
     const URL_BASE = "https://scriptures.byu.edu/";
     const URL_BOOKS = `${URL_BASE}mapscrip/model/books.php`;
+    const URL_SCRIPTURES = `${URL_BASE}mapscrip/mapgetscrip.php`;
     const URL_VOLUMES = `${URL_BASE}mapscrip/model/volumes.php`;
 
     /*-------------------------------------------------------------------
@@ -49,7 +51,12 @@ const Scriptures = (function () {
     let bookChapterValid;
     let booksGrid;
     let booksGridContent;
+    let chaptersGrid;
+    let chaptersGridContent;
     let cacheBooks;
+    let encodedScripturesURLParameters;
+    let getScripturesCallback;
+    let getScripturesFailure;
     let htmlAnchor;
     let htmlDiv;
     let htmlElement;
@@ -66,14 +73,18 @@ const Scriptures = (function () {
     /*-------------------------------------------------------------------
      *                      PRIVATE METHODS
      */
-    ajax = function (url, successCallback, failureCallback) {
+    ajax = function (url, successCallback, failureCallback, skipJsonParse) { // skipJsonParse = undefined (falsy) if nothing is passed in
         let request = new XMLHttpRequest();
 
         request.open(REQUEST_GET, url, true);
 
         request.onload = function () {
             if (request.status >= REQUEST_STATUS_OK && request.status < REQUEST_STATUS_ERROR) {
-                let data = JSON.parse(request.response);
+                let data = (                            // Ternary operator:
+                    skipJsonParse                       // if
+                    ? request.response                  // then
+                    : JSON.parse(request.response)      // else
+                )
 
                 if (typeof successCallback === "function") {
                     successCallback(data);
@@ -144,9 +155,63 @@ const Scriptures = (function () {
         }
     };
 
+    chaptersGrid = function (book) {
+        return htmlDiv({
+            classKey: CLASS_VOLUME,
+            content: htmlElement(TAG_HEADER5, book.fullName)
+        }) + htmlDiv({
+            classKey: CLASS_BOOKS,
+            content: chaptersGridContent(book)
+        });
+    };
+
+    chaptersGridContent = function (book) {
+        let gridContent = "";
+        let chapter = 1; // iterate until you have a button for every chapter
+
+        while (chapter <= book.numChapters) {
+            gridContent += htmlLink({
+                classKey: `${CLASS_BUTTON} ${CLASS_CHAPTER}`,
+                id: chapter,
+                href: `#0:${book.id}:${chapter}`,
+                content: chapter
+            })
+            chapter += 1;
+        }
+
+        return gridContent;
+    };
+
+    encodedScripturesURLParameters = function (bookId, chapter, verses, isJst) {
+        // default behavior = undefined, which won't load anything
+        if (bookId !== undefined && chapter !== undefined) {
+            let options = "";
+
+            if (verses !== undefined) {
+                options += verses;
+            }
+
+            if (isJst !== undefined) {
+                options += "&jst=JST";
+            }
+
+            return `${URL_SCRIPTURES}?book=${bookId}&chap=${chapter}&verses${options}`
+        }
+    };
+
+    getScripturesCallback = function (chapterHtml) {
+        document.getElementById(DIV_SCRIPTURES).innerHTML = chapterHtml;
+
+        // NEEDSWORK: setupMarkers()
+    };
+
+    getScripturesFailure = function () {
+        document.getElementById(DIV_SCRIPTURES).innerHTML = "Unable to retrieve chapter content from server.";
+    };
+
     htmlAnchor = function (volume) {
         return `<a name="${volume.id}" />`;
-    }
+    };
     
     htmlDiv = function (parameters) {
         let classString = "";
@@ -170,7 +235,7 @@ const Scriptures = (function () {
     
     htmlElement = function (tagName, content) {
         return `<${tagName}>${content}</${tagName}>`;
-    }
+    };
     
     htmlLink = function (parameters) {
         let classString = "";
@@ -199,7 +264,7 @@ const Scriptures = (function () {
     
     htmlHashLink = function (hashArguments, content) {
         return `<a href="javascript:void(0)" onclick="changeHash(${hashArguments})">${content}</a>`;
-    }
+    };
 
     init = function (callback) {
         let booksLoaded = false;
@@ -223,64 +288,23 @@ const Scriptures = (function () {
         });
     };
 
-    testGeoplaces = function () {
-        const similar = function (number1, number2) {
-            return Math.abs(number1 - number2) < 0.0000001;
-        };
-
-        const matchingElement = function (array, object) {
-            let match = null;
-
-            array.forEach(element => {
-                if (similar(element.latitude, object.latitude)
-                    && similar(element.longitude, object.longitude)) {
-                    if (match === null) {
-                        match = element;
-                    }
-                }
-            });
-
-            return match;
-        };
-
-        const makeUniqueGeoPlaces = function (geoPlaces) {
-            const uniqueGeoPlaces = [];
-
-            geoPlaces.forEach(geoPlace => {
-                const matchedElement = matchingElement(uniqueGeoPlaces, geoPlace);
-
-                if (!matchedElement) {
-                    uniqueGeoPlaces.push(geoPlace);
-                } else {
-                    if (!matchedElement.name.toLowerCase().includes(geoPlace.name.toLowerCase())) {
-                        matchedElement.name = `${matchedElement.name}, ${geoPlace.name}`;
-                    }
-                }
-            });
-
-            console.log(uniqueGeoPlaces);
-
-            return uniqueGeoPlaces;
-        };
-
-        makeUniqueGeoPlaces([
-            { id: 536, name: "Hazor", latitude: 33.017181, longitude: 35.568048 },
-            { id: 536, name: "Hazor", latitude: 33.017181, longitude: 35.568048 },
-            { id: 536, name: "Hazor", latitude: 33.017181, longitude: 35.568048 },
-            { id: 822, name: "Mount Halak", latitude: 30.916667, longitude: 34.833333 },
-            { id: 1021, name: "Seir", latitude: 30.734691, longitude: 35.606250 },
-            { id: 129, name: "Baal-gad", latitude: 33.416159, longitude: 35.857256 },
-            { id: 1190, name: "Valley of Lebanon", latitude: 33.416159, longitude: 35.857256 },
-            { id: 824, name: "Mount Hermon", latitude: 33.416159, longitude: 35.857256 },
-        ]);
-    };
-
     navigateBook = function (bookId) {
-        console.log("navigateBook " + bookId);
+        // go to the books object and find something that matches the bookId
+        let book = books[bookId];
+
+        // if it has more than one chapter, let the user choose which chapter; else, show content
+        if (books.numChapters <= 1) {
+            navigateChapter(bookId, book.numChapters)
+        } else {
+            document.getElementById(DIV_SCRIPTURES).innerHTML = htmlDiv({
+                id: DIV_SCRIPTURES_NAVIGATOR,
+                content: chaptersGrid(book)
+            });
+        }
     };
 
     navigateChapter = function (bookId, chapter) {
-        console.log("navigateChapter " + bookId + ", " + chapter);
+        ajax(encodedScripturesURLParameters(bookId, chapter), getScripturesCallback, getScripturesFailure, true)
     };
 
     navigateHome = function (volumeId) {
@@ -335,6 +359,58 @@ const Scriptures = (function () {
         }
     };
 
+    testGeoplaces = function () {
+        const similar = function (number1, number2) {
+            return Math.abs(number1 - number2) < 0.0000001;
+        };
+
+        const matchingElement = function (array, object) {
+            let match = null;
+
+            array.forEach(element => {
+                if (similar(element.latitude, object.latitude)
+                    && similar(element.longitude, object.longitude)) {
+                    if (match === null) {
+                        match = element;
+                    }
+                }
+            });
+
+            return match;
+        };
+
+        const makeUniqueGeoPlaces = function (geoPlaces) {
+            const uniqueGeoPlaces = [];
+
+            geoPlaces.forEach(geoPlace => {
+                const matchedElement = matchingElement(uniqueGeoPlaces, geoPlace);
+
+                if (!matchedElement) {
+                    uniqueGeoPlaces.push(geoPlace);
+                } else {
+                    if (!matchedElement.name.toLowerCase().includes(geoPlace.name.toLowerCase())) {
+                        matchedElement.name = `${matchedElement.name}, ${geoPlace.name}`;
+                    }
+                }
+            });
+
+            console.log(uniqueGeoPlaces);
+
+            return uniqueGeoPlaces;
+        };
+
+        makeUniqueGeoPlaces([
+            { id: 536, name: "Hazor", latitude: 33.017181, longitude: 35.568048 },
+            { id: 536, name: "Hazor", latitude: 33.017181, longitude: 35.568048 },
+            { id: 536, name: "Hazor", latitude: 33.017181, longitude: 35.568048 },
+            { id: 822, name: "Mount Halak", latitude: 30.916667, longitude: 34.833333 },
+            { id: 1021, name: "Seir", latitude: 30.734691, longitude: 35.606250 },
+            { id: 129, name: "Baal-gad", latitude: 33.416159, longitude: 35.857256 },
+            { id: 1190, name: "Valley of Lebanon", latitude: 33.416159, longitude: 35.857256 },
+            { id: 824, name: "Mount Hermon", latitude: 33.416159, longitude: 35.857256 },
+        ]);
+    };
+
     volumesGridContent = function (volumeId) {
         let gridContent = "";
 
@@ -349,8 +425,8 @@ const Scriptures = (function () {
             }
         });
 
-        return gridContent;
-    }
+        return gridContent + BOTTOM_PADDING;
+    };
 
     /*-------------------------------------------------------------------
      *                      PUBLIC API
