@@ -9,11 +9,15 @@
 /*jslint
     browser, long
 */
+/*global
+    console, map
+*/
 /*property
-    books, classKey, content, forEach, fullName, getElementById, gridName, hash,
-    href, id, init, innerHTML, length, log,  axBookId, minBookId, numChapters,
-    onHashChanged, onerror, onload, open, parse, push, response, send, slice,
-    split, status
+    books, classKey, content, exec, forEach, fullName, getAttribute,
+    getElementById, gridName, hash, href, id, init, innerHTML, length, log,
+    maxBookId, minBookId, numChapters, onHashChanged, onerror, onload, open,
+    parse, push, querySelectorAll, response, send, setMap, slice, split, status,
+    tocName
 */
 
 const Scriptures = (function () {
@@ -29,6 +33,14 @@ const Scriptures = (function () {
     const CLASS_VOLUME = "volume";
     const DIV_SCRIPTURES_NAVIGATOR = "scripnav";
     const DIV_SCRIPTURES = "scriptures";
+    const INDEX_BOOK = 1;
+    const INDEX_CHAPTER = 2;
+    const INDEX_FLAG = 11;
+    const INDEX_LATITUDE = 3;
+    const INDEX_LONGITUDE = 4;
+    const INDEX_PLACENAME = 2;
+    const INDEX_VOLUME = 0;
+    const LAT_LONG_PARSER = /\((.*),'(.*)',(.*),(.*),(.*),(.*),(.*),(.*),(.*),(.*),'(.*)'\)/;
     const REQUEST_GET = "GET";
     const REQUEST_STATUS_OK = 200;
     const REQUEST_STATUS_ERROR = 400;
@@ -42,11 +54,13 @@ const Scriptures = (function () {
      *                      PRIVATE VARIABLES
      */
     let books;
+    let gmMarkers = []; // track all markers in chapters
     let volumes;
 
     /*-------------------------------------------------------------------
      *                      PRIVATE METHOD DECLARATIONS
      */
+    let addMarker;
     let ajax;
     let bookChapterValid;
     let booksGrid;
@@ -54,6 +68,7 @@ const Scriptures = (function () {
     let chaptersGrid;
     let chaptersGridContent;
     let cacheBooks;
+    let clearMarkers;
     let encodedScripturesURLParameters;
     let getScripturesCallback;
     let getScripturesFailure;
@@ -66,13 +81,33 @@ const Scriptures = (function () {
     let navigateBook;
     let navigateChapter;
     let navigateHome;
+    let nextChapter;
     let onHashChanged;
+    let previousChapter;
+    let setupMarkers;
+    let showLocation;
     let testGeoplaces;
+    let titleForBookChapter;
     let volumesGridContent;
 
     /*-------------------------------------------------------------------
      *                      PRIVATE METHODS
      */
+
+    addMarker = function (placename, latitude, longitude) {
+        // NEEDSWORK: check to see if we already have this latitude/longitude in the gmMarkers array
+        // NEEDSWORK: create the marker and append to gmMarkers
+
+        let marker = new google.maps.Marker({
+            position: {lat: Number(latitude), lng: Number(longitude)},
+            map,
+            title: placename,
+            animation: google.maps.Animation.DROP
+        });
+
+        gmMarkers.push(marker);
+    };
+
     ajax = function (url, successCallback, failureCallback, skipJsonParse) { // skipJsonParse = undefined (falsy) if nothing is passed in
         let request = new XMLHttpRequest();
 
@@ -182,6 +217,15 @@ const Scriptures = (function () {
         return gridContent;
     };
 
+    clearMarkers = function () {
+        gmMarkers.forEach(function (marker) {
+            marker.setMap(null);
+        });
+        
+        // clear out array
+        gmMarkers = [];
+    };
+
     encodedScripturesURLParameters = function (bookId, chapter, verses, isJst) {
         // default behavior = undefined, which won't load anything
         if (bookId !== undefined && chapter !== undefined) {
@@ -201,8 +245,7 @@ const Scriptures = (function () {
 
     getScripturesCallback = function (chapterHtml) {
         document.getElementById(DIV_SCRIPTURES).innerHTML = chapterHtml;
-
-        // NEEDSWORK: setupMarkers()
+        setupMarkers()
     };
 
     getScripturesFailure = function () {
@@ -314,6 +357,38 @@ const Scriptures = (function () {
         });
     };
 
+    nextChapter = function (bookId, chapter) {
+        console.log("nextChapter() works");
+        
+        let book = books[bookId];
+
+        if (book !== undefined) {
+            if (chapter < book.numChapters) {
+                return [
+                    bookId,
+                    chapter + 1,
+                    titleForBookChapter(book, chapter + 1)
+                ];
+            }
+
+            let nextBook = books[bookId + 1];
+
+            if (nextBook !== undefined) {
+                let nextChapterValue = 0;
+
+                if (nextBook.numChapters > 0) {
+                    nextChapterValue = 1;
+                }
+
+                return [
+                    nextBook.id,
+                    nextChapterValue,
+                    titleForBookChapter(nextBook, nextChapterValue)
+                ];
+            }
+        }
+    }
+
     onHashChanged = function () {
         let ids = [];
 
@@ -326,9 +401,9 @@ const Scriptures = (function () {
             navigateHome();
         // length is 1
         } else if (ids.length === 1) {
-            let volumeId = Number(ids[0]);
+            let volumeId = Number(ids[INDEX_VOLUME]);
 
-            if (volumeId < volumes[0].id || volumeId > volumes.slice(-1)[0].id) {
+            if (volumeId < volumes[INDEX_VOLUME].id || volumeId > volumes.slice(-1)[INDEX_VOLUME].id) {
                 // go home
                 navigateHome();
             } else {
@@ -337,7 +412,7 @@ const Scriptures = (function () {
             }
         // length is greater than 2
         } else {
-            let bookId = Number(ids[1]);
+            let bookId = Number(ids[INDEX_BOOK]);
 
             if (books[bookId] === undefined) {
                 navigateHome();
@@ -347,7 +422,7 @@ const Scriptures = (function () {
                     navigateBook(bookId);
                 // go to the book chapter
                 } else {
-                    let chapter = Number(ids[2]);
+                    let chapter = Number(ids[INDEX_CHAPTER]);
 
                     if (bookChapterValid(bookId, chapter)) {
                         navigateChapter(bookId, chapter);
@@ -357,6 +432,83 @@ const Scriptures = (function () {
                 }
             }
         }
+    };
+
+    // Book ID and chapter must be integers
+    // Returns undefined if there is no previous chapter
+    // Otherwise returns an array with the previous book ID, chapter, and title
+    previousChapter = function (bookId, chapter) {
+        // Get the book for the given bookId. if it exists (!== undefined):
+        //      If chapter > 1, it's the easy case. Just return the same bookId,
+        //          chapter - 1, and the title string for that book/chapter combo.
+        //      Else: we need to see if there's a previous book:
+        //          Get the book for bookId - 1. If it exists:
+        //              Return bookId - 1, the lsat chapter of bookId/chapter/title,
+        // If we didn't already return a 3-element array of bookId/chapter/title,
+        //      at this point just drop through to the bottom of the function. We'll
+        //      return undefined by default, meaning there is not previous chapter.
+        
+        console.log("previousChapter() works!")
+
+        if (chapter.isInteger && bookId.isInteger) {
+            let book = books[bookId];
+
+            // if there are previous chapters (if it's not the first/only chapter)
+            if (chapter > book.numChapters) {
+                return [
+                    bookId,
+                    chapter - 1,
+                    titleForBookChapter(book, chapter - 1)
+                ];
+            }
+            
+            // switch books, if it's the first/only chapter (or if there are no chapters)
+            let prevBook = books[bookId - 1];
+
+            if (prevBook !== undefined) {
+                let prevChapterValue = 0;
+
+                if (prevBook.numChapters > 0) {
+                    prevChapterValue = 1;
+                }
+
+                return [
+                    prevBook.id,
+                    prevChapterValue,
+                    titleForBookChapter(prevBook, prevChapterValue)
+                ];
+            }
+        }
+
+    }
+
+    setupMarkers = function () {
+        if (gmMarkers.length > 0) {
+            clearMarkers();
+        }
+        
+        document.querySelectorAll("a[onclick^=\"showLocation(\"]").forEach( function (element) {
+            let matches = LAT_LONG_PARSER.exec(element.getAttribute("onclick"));
+
+            // call add marker for each element
+            if (matches) {
+                let placename = matches[INDEX_PLACENAME];
+                let latitude = matches[INDEX_LATITUDE];
+                let longitude = matches[INDEX_LONGITUDE];
+                let flag = matches[INDEX_FLAG];
+
+                if (flag !== "") {
+                    placename = `${placename} ${flag}`;
+                }
+
+                addMarker(placename, latitude, longitude);
+            }
+        });
+    };
+
+    showLocation = function (geotagId, placename, latitude, longitude, viewLatitude, viewLongitude, viewTilt, viewRoll, viewAltitude, viewHeading) {
+        map.setZoom(10);
+        map.setCenter({ lat: viewLatitude, lng: viewLongitude });
     };
 
     testGeoplaces = function () {
@@ -411,6 +563,16 @@ const Scriptures = (function () {
         ]);
     };
 
+    titleForBookChapter = function (book, chapter) {
+        if (book !== undefined) {
+            if (chapter > 0) {
+                return `${book.tocName} ${chapter}`;
+            }
+
+            return book.tocName;
+        }
+    };
+
     volumesGridContent = function (volumeId) {
         let gridContent = "";
 
@@ -434,7 +596,10 @@ const Scriptures = (function () {
     return {
         init,
         testGeoplaces,
-        onHashChanged
+        onHashChanged,
+        nextChapter,
+        previousChapter,
+        showLocation
     };
 
 }());

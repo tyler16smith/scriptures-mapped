@@ -8,6 +8,10 @@
     <meta name="description" content="The Standard Works, Mapped">
     <meta name="author" content="Tyler Smith">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Font Awesome icons (free version) -->
+    <script src="https://use.fontawesome.com/releases/v5.15.4/js/all.js" crossorigin="anonymous"></script>
+    <!-- Google Maps API -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
     <!-- Links -->
     <link rel="stylesheet" href="css/styles.css?v=1.0">
     <script src="js/scriptures.js" type="text/javascript"></script>
@@ -20,11 +24,25 @@
         </div>
     </div>
     <div id="content">
+        <i class="fas fa-arrow-left" onclick="Scriptures.previousChapter()"></i>&nbsp;&nbsp;
+        <i class="fas fa-arrow-right" onclick="Scriptures.nextChapter()"></i>
         <div id="scriptures"></div>
         <div id="map"></div>
+        <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBB0r2qn4GnK2ThvP714tLPIM53t8mmwUM&callback=initMap"></script>
     </div>
 
     <script type="text/javascript">
+       let map;
+       let showLocation;
+       
+       function initMap() {
+            let jerusalem = { lat: 31.767081, lng: 35.219912 };
+            map = new google.maps.Map(document.getElementById('map'),{
+                center: jerusalem,
+                zoom: 8
+            });
+        }
+
         function ready(readyListener) {
             // if the document is loading, call the readListener function
             if (document.readyState !== "loading") {
@@ -37,6 +55,7 @@
         // anonymous function
         ready(function () {
             Scriptures.init(() => { Scriptures.onHashChanged(); }); // navigate home as default
+            showLocation = Scriptures.showLocation;
             window.addEventListener("hashchange", Scriptures.onHashChanged);
         });
     </script>

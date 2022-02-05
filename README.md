@@ -1,23 +1,25 @@
 # README
 
-## What I have learned in parts one and two of Project 1, "The Scriptures, Mapped"
+## What I have learned in Project 1, "The Scriptures, Mapped"
 
-Throughout these two walkthroughs, I better learned how it comes together as one. Thus
-concepts, principles, and syntax of correct JavaScript coding. However, this walkthrough
-far in this course, we have done several homework assignments and studied specific
-better helped me put it all together and see it come to fruition in a project format.
+Throughout these two walkthroughs, I better learned how it all comes together as one. In
+my programming experience thus far, I have never organized my functions with such tact and
+order before this project. This project taught me much more than just correct JavaScript
+principles; it taught me correct programming principles.
 
-I enjoyed pulling data from the API's in JSON format and am excited to work with this
-data to visualize the mappings. Walking through the process also solidified the difference
-between public and private functions while working with our JavaScript object, "Scriptures."
+I have followed along with all of the videos and have gotten my program to work. The
+finished product still has a long way to go until perfection, but I believe it is a good
+representation of my many hours of effort and learning.
 
-Another fun learning experience was switching all functions to arrow functions (as seen
-in the example below):
+I enjoyed the process of slowly understanding what was going on. I didn't understand the
+overall structure of the "Scriptures" function - specifically dealing with public and
+private variables until the very end. I also enjoyed learning the Google Maps API. Luckily,
+the documentation was excellent and allowed me to google simple functions such as setting
+the zoom and centering locations.
 
-Function            init function(callback) {}
-Arrow Function      init = (callback) => {}
-
-One of the parts I am still not certain on is the callback object. This object is passed
-through several functions including "init" and "cacheBooks." I messed around with the 
-callback object in the browser inspect window and will continue to learn more about this
-object on YouTube and as we go forward with the project.
+There were, however, a few parts that I couldn't figure out. The first was the next and
+previous chapter functions. My goal was to get "nextChapter()" working first since I only
+had to follow along with the video and then move onto "previousChapter()" but I never got
+"nextChapter()" to work. I tried debugging in the console and following the journey by
+stepping into the function but to no avail. I plan to ask a friend or two for help. If they
+can't help in time, I'll fix it after the due date.
