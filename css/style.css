@@ -1,0 +1,373 @@
+html {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    scroll-behavior: smooth;
+    transition: all 2s linear;
+}
+
+body {
+    color: #222;
+    background-color: #f5f5f5;
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    font-weight: bold;
+    font-size: 10pt;
+}
+
+img {
+    max-width: 100%;
+}
+
+.maplabel {
+    font-size: 12pt;
+    font-weight: 400;
+    color: #201000;
+    text-shadow: -1px -1px 0 #fff8f0, 1px -1px 0 #fff8f0, -1px 1px 0 #fff8f0, 1px 1px 0 #fff8f0;
+}
+
+#header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    background-color: #383838;
+    color: white;
+    height: 56px;
+    display: flex;
+    flex-direction: row;
+    box-shadow: 0 2px 5px 0 rgba(0,0,0,0.16),0 2px 10px 0 rgba(0,0,0,0.12);
+    align-items: center;
+    z-index: 10000;
+}
+
+#content {
+    position: absolute;
+    top: 56px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: row;
+    align-content: stretch;
+}
+
+#crumbs {
+    padding-left: 1.25em;
+    order: -1;
+}
+
+ul.breadcrumb {
+    list-style: none;
+    font-family: font-family: Arial, Helvetica, sans-serif;;
+}
+
+ul.breadcrumb li {
+    display: inline;
+    font-size: 1.1em;
+}
+
+ul.breadcrumb li+li:before {
+    padding: 5px;
+    color: rgb(255, 255, 255);
+    content: "/\00a0";
+}
+
+ul.breadcrumb li a {
+    color: #0275d8;
+    text-decoration: none;
+}
+
+ul.breadcrumb li a:hover {
+    color: #ffffff;
+    text-decoration: underline;
+}
+
+#centerhead {
+    display: flex;
+    flex: 1;
+    justify-content: center;
+    font-weight: normal;
+    text-align: center;
+    flex-direction: column;
+}
+
+div.title {
+    display: block;
+    font-size: larger;
+    font-weight: bolder;
+}
+
+div.subtitle {
+    display: block;
+    font-size: smaller;
+}
+
+#about {
+    align-self: center;
+    padding: .5em;
+}
+
+#scriptures {
+    min-width: 220px;
+    max-width: 440px;
+    flex: 1 1 30%;
+    height: 100%;
+    min-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    border-right: 1px solid #aaa;
+    position: relative;
+}
+
+#scripnav {
+    position: absolute;
+    max-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    width: 100%;
+}
+
+#map {
+    flex: 1 1 70%;
+}
+
+.volume {
+    padding: .5em 1.7em .5em;
+    font-size: 12pt;
+}
+
+div.books {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 0 .3em;
+    margin: 0;
+}
+
+div.books a {
+    flex: 0 0 7em;
+    font-weight: normal;
+    font-family: Arial, Helvetica, sans-serif;
+    margin: .4em;
+    padding: .5em .5em .5em;
+    background-color: #fff;
+    color: #222;
+    text-decoration: none;
+    border-radius: 0.2em;
+    box-shadow: #dbdbdb;
+    border: 1px solid;
+    box-shadow: 3px 4px #acacac;
+    animation: fadeIn linear 0.4s;
+    -webkit-animation: fadeIn linear 0.4s;
+    -moz-animation: fadeIn linear 0.4s;
+    -o-animation: fadeIn linear 0.4s;
+    -ms-animation: fadeIn linear 0.4s;
+}
+
+div.books a:hover {
+    background-color:rgb(187, 187, 187);
+    transition-duration: 0.3s;
+}
+
+div.books a.chapter {
+    flex: 0 0 4em;
+}
+
+@keyframes fadeIn {
+    0% {opacity:0;}
+    100% {opacity:1;}
+}
+
+@-moz-keyframes fadeIn {
+    0% {opacity:0;}
+    100% {opacity:1;}
+}
+
+@-webkit-keyframes fadeIn {
+    0% {opacity:0;}
+    100% {opacity:1;}
+}
+
+@-o-keyframes fadeIn {
+    0% {opacity:0;}
+    100% {opacity:1;}
+}
+
+@-ms-keyframes fadeIn {
+    0% {opacity:0;}
+    100% {opacity:1;}
+}
+
+.volume h5 {
+    font-size: 1.24rem;
+    margin: 0.72rem 0 0.556rem 0;
+}
+
+.books li {
+    flex: 0 0 5.4em;
+    align-content: center;
+    list-style: none;
+    height: 24px;
+    min-width: 5em;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    padding: .5em .5em 0 .5em;
+    margin: 0;
+    color: rgb(0, 0, 0);
+    font-size: 11pt;
+    font-weight: normal;
+    text-shadow: 2px 0px 2px rgb(255, 255, 255);
+    background-color: rgb(255, 255, 255);
+    border: solid 5px;
+}
+
+#crumb ul {
+    padding: 0;
+    margin: 0;
+    line-height: 1.0;
+}
+
+#crumb li {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    display: inline-block;
+}
+
+#header a:link, #header a:visited, #header a:active {
+    color: white;
+    text-decoration: none;
+}
+
+#header a:hover {
+    color: #8d8c8c;
+    transition: 0.3s;
+}
+
+#crumb li:not(:first-child)::before {
+    content: ">";
+    padding: .3em;
+}
+
+div.text {
+    padding: 1em;
+    font-weight: normal;
+    font-size: 12pt;
+}
+
+.scripturewrapper {
+    position: absolute;
+    min-height: 100%;
+    max-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    font-size: 12pt;
+    font-weight: normal;
+    background-color: white;
+    padding-bottom: 3rem;
+    animation: fadeIn linear 0.4s;
+    -webkit-animation: fadeIn linear 0.4s;
+    -moz-animation: fadeIn linear 0.4s;
+    -o-animation: fadeIn linear 0.4s;
+    -ms-animation: fadeIn linear 0.4s;
+}
+
+div.chapterheading {
+    font-size: 14pt;
+    font-weight: bold;
+    padding: .5em;
+    text-align: center;
+}
+
+div.chapterheading b.big {
+    font-size: 140%;
+}
+
+div.navheading {
+    font-size: 13pt;
+    text-align: center;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+#scriptures ul.versesblock {
+    margin: 0;
+    line-height: auto;
+    list-style: none;
+    padding: 1em;
+    padding-left: 1.5em;
+    padding-right: 1.5em;
+    font-size: 13pt;
+}
+
+ul.versesblock li {
+    position: relative;
+    display: block;
+    margin-bottom: .3em;
+}
+
+ul.versesblock li.sectionHeader {
+    font-style: italic;
+}
+
+span.verse {
+    padding-left: .4em;
+    padding-right: .3em;
+}
+
+.scripturewrapper li a:link, .scripturewrapper li a:visited, .scripturewrapper li a:active {
+    color: #44b;
+    text-decoration: none;
+}
+
+.scripturewrapper li a:hover {
+    color: #4488ff;
+    text-decoration: underline;
+}
+
+.navheading a:link, .navheading a:visited, .navheading a:active {
+    color: #222;
+    text-decoration: none;
+}
+
+.navheading a:hover {
+    color: #4488ff;
+    text-decoration: underline;
+}
+
+.navheading .nextprev {
+    position: absolute;
+    right: 1em;
+}
+
+li.match {
+    background-color: #ffffcc;
+}
+
+@media (max-width: 600px) {
+    #content {
+        display: grid;
+        grid-template-columns: auto;
+        grid-template-rows: auto 60%;
+        grid-template-areas:
+          "map"
+          "scriptures";
+      }
+    
+    #map {
+        grid-area: map;
+    }
+
+    #scriptures {
+        grid-area: scriptures;
+        max-width: 100%;
+    }
+}
