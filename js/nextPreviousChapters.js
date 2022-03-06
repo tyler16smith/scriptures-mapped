@@ -24,8 +24,8 @@ $(function () {
     const TRANSPARENT = 0;
 
     // Private Variables
-    let visibleDiv = $("#chapter1");
-    let invisibleDiv = $("#chapter2");
+    let visibleDiv = $("#scripnav1");
+    let invisibleDiv = $("#scripnav2");
     let count = 1;
 
     // Helper methods
