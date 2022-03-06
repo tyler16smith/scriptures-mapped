@@ -62,7 +62,6 @@ img {
 
 ul.breadcrumb {
     list-style: none;
-    font-family: font-family: Arial, Helvetica, sans-serif;;
 }
 
 ul.breadcrumb li {
@@ -123,7 +122,7 @@ div.subtitle {
     position: relative;
 }
 
-#scripnav {
+#scripnav, #scripnav1, #scripnav2 {
     position: absolute;
     max-height: 100%;
     overflow-x: hidden;
@@ -277,6 +276,9 @@ div.text {
     -moz-animation: fadeIn linear 0.4s;
     -o-animation: fadeIn linear 0.4s;
     -ms-animation: fadeIn linear 0.4s;
+    width: 100%;
+    left: 0;
+    top: 0;
 }
 
 div.chapterheading {

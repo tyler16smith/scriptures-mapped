@@ -18,6 +18,7 @@ import navigateChapter from "./Chapter.js";
 import Html from "./HtmlHelper.js";
 import {books, volumes} from "./MapScripApi.js";
 import Api from "./MapScripApi.js";
+import { animation } from "tailwindcss/defaultTheme";
 
 /*-------------------------------------------------------------------
  *                      CONSTANTS
@@ -147,9 +148,10 @@ const onHashChanged = function () {
                 navigateBook(bookId);
             } else {
                 let chapter = Number(ids[2]);
+                let animationType = ids[3]; 
 
                 if (bookChapterValid(bookId, chapter)) {
-                    navigateChapter(bookId, chapter);
+                    navigateChapter(bookId, chapter, animationType);
                 } else {
                     navigateHome();
                 }

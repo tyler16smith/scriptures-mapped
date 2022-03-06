@@ -27,6 +27,8 @@ const CLASS_ICON = "material-icons";
 const ICON_NEXT = "skip_next";
 const ICON_PREVIOUS = "skip_previous";
 const TAG_SPAN = "span";
+const ANIMATION_TYPE_RIGHT = "right";
+const ANIMATION_TYPE_LEFT = "left";
 
 /*-------------------------------------------------------------------
  *                      VARIABLES
@@ -108,9 +110,15 @@ const nextChapter = function (bookId, chapter) {
 };
 
 const nextPreviousMarkup = function (nextPrev, icon) {
+    let animationType = ANIMATION_TYPE_RIGHT;
+
+    if (icon === ICON_PREVIOUS) {
+        animationType = ANIMATION_TYPE_LEFT;
+    };
+
     return Html.link({
         content: Html.element(TAG_SPAN, icon, CLASS_ICON),
-        href: `#0:${nextPrev[0]}:${nextPrev[1]}`,
+        href: `#0:${nextPrev[0]}:${nextPrev[1]}:${animationType}`,
         title: nextPrev[2]
     });
 };

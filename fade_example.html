@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Example</title>
+    <style>
+        img {
+            max-width: 100%;
+            display: block;
+        }
+
+        body {
+            padding: 0;
+            margin: 0;
+        }
+
+        .container {
+            position: relative;
+            width: 300px;
+            height: 500px;
+        }
+
+        .map {
+            background-color: #fdd9a5;
+            position: absolute;
+            left: 300px;
+            top: 0px;
+            width: 800px;
+            height: 500px;
+        }
+
+        .chapter {
+            background-color: #eee;
+            width: 100%;
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+        }
+
+        #chapter2 {
+            left: 100%;
+        }
+
+        .page {
+            display: flex;
+        }
+
+        @media (max-width: 600px) {
+
+        }
+
+        @media (min-width: 601px) {
+            
+        }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="chapter" id="chapter1">
+            <p>Chapter 1</p>
+            <p>Click me to slide Chapter 2 in from the right.</p>
+        </div>
+        <div class="chapter" id="chapter2">
+            <p>Chapter 2</p>
+            <p>Click me to slide Chapter 1 in from the left.</p>
+        </div>
+    </div>
+    <div class="map">
+        <p>Pretend a map is here.</p>
+        <p>Click this div to run a cross-fade animation.</p>
+    </div>
+    <script type="text/javascript">
+        $(function () {
+            // when DOM tree is ready, set up three click handlers
+
+            // Constants
+            const ANIMATION_DURATION = 350;
+            const ANIMATION_TYPE_SLIDE_LEFT = "left";
+            const ANIMATION_TYPE_SLIDE_RIGHT = "right";
+            const POSITION_BEHIND_MAP = "100%";
+            const POSITION_OFFSCREEN_LEFT = "-100%";
+            const POSITION_VISIBLE = "0px";
+            const OPAQUE = 1;
+            const TRANSPARENT = 0;
+
+            // Private Variables
+            let visibleDiv = $("#chapter1");
+            let invisibleDiv = $("#chapter2");
+            let count = 1;
+
+            // Helper methods
+            const animateToNewContent = function (content, animationType) {
+                invisibleDiv.html(content);
+                
+                if (animationType === ANIMATION_TYPE_SLIDE_LEFT) {
+                    slideFromLeft();
+                } else if (animationType === ANIMATION_TYPE_SLIDE_RIGHT) {
+                    slideFromRight();
+                } else {
+                    crossFade();
+                }
+            };
+
+            const swapDivs = function() {
+                let temp = visibleDiv;
+                
+                visibleDiv = invisibleDiv;
+                invisibleDiv = temp;
+            };
+
+            const nextContent = function () {
+                count += 1;
+                return `The overall count is now <b>${count}</b>`;
+            };
+
+            const slideFromRight = function () {
+                // make sure offscreen div is in right spot
+                invisibleDiv.css({left: POSITION_BEHIND_MAP, opacity: OPAQUE});
+
+                // run animation
+                invisibleDiv.animate({left: POSITION_VISIBLE}, ANIMATION_DURATION);
+                visibleDiv.animate({left: POSITION_OFFSCREEN_LEFT}, ANIMATION_DURATION, swapDivs);
+            };
+
+            const slideFromLeft = function () {
+                // make sure offscreen div is in right spot
+                invisibleDiv.css({left: POSITION_OFFSCREEN_LEFT, opacity: OPAQUE});
+
+                // run animation
+                invisibleDiv.animate({left: POSITION_VISIBLE}, ANIMATION_DURATION);
+                visibleDiv.animate({left: POSITION_BEHIND_MAP}, ANIMATION_DURATION, swapDivs);
+            };
+
+            const crossFade = function () {
+                // make sure invisible div is in the right spot
+                invisibleDiv.css({left: POSITION_VISIBLE, opacity: TRANSPARENT});
+
+                const hideIfTransparent = function () {
+                    swapDivs();
+                    invisibleDiv.css({left: POSITION_OFFSCREEN_LEFT});
+                };
+                
+                // cross-fade the divs
+                visibleDiv.animate({opacity: TRANSPARENT}, ANIMATION_DURATION);
+                invisibleDiv.animate({opacity: OPAQUE}, ANIMATION_DURATION, hideIfTransparent);
+            };
+
+            // set up click handlers
+            visibleDiv.click(() => {
+                animateToNewContent(nextContent(), ANIMATION_TYPE_SLIDE_RIGHT);
+            });
+            invisibleDiv.click(() => {
+                animateToNewContent(nextContent(), ANIMATION_TYPE_SLIDE_LEFT);
+            });
+            $(".map").click(() => {
+                animateToNewContent(nextContent(), )
+            });
+    </script>
+</body>
+</html>
